@@ -15,6 +15,8 @@ import java.util.logging.Logger;
 
 public class AuthService {
     private static final Logger LOGGER = Logger.getLogger(AuthService.class.getName());
+    private static final int MAX_FAILED_LOGIN_ATTEMPTS = 5;
+    private static final int LOGIN_LOCK_MINUTES = 15;
     private final UserDAO userDAO = new UserDAO();
     private final PasswordResetTokenDAO tokenDAO = new PasswordResetTokenDAO();
     private final EmailService emailService = new EmailService();
@@ -25,17 +27,59 @@ public class AuthService {
     }
 
     public LoginResult login(String email, String password) throws SQLException {
-        if (email == null || email.isBlank() || password == null || password.isBlank()) return null;
-        User user = userDAO.findForLogin(email.trim().toLowerCase(java.util.Locale.ROOT));
-        if (user == null || !user.isActive() || !"ACTIVE".equals(user.getStatus())) return null;
-        try {
-            if (!PasswordUtil.verifyPassword(password, user.getPasswordHash())) return null;
-        } catch (IllegalArgumentException e) {
-            LOGGER.warning("Invalid stored BCrypt hash for user id " + user.getId());
+        if (email == null || email.isBlank() || password == null || password.isBlank()) {
             return null;
         }
-        return new LoginResult(user.getId(), user.getDisplayName(),
-                user.getRoles().stream().map(com.crm.model.Role::getName).toList());
+
+        String normalizedEmail = email.trim().toLowerCase(java.util.Locale.ROOT);
+        User user = userDAO.findForLogin(normalizedEmail);
+
+        if (user == null || !user.isActive() || !"ACTIVE".equals(user.getStatus())) {
+            return null;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime lockUntil = user.getLockUntil();
+        int failedAttempts = user.getFailedLoginAttempts();
+
+        if (lockUntil != null) {
+            if (now.isBefore(lockUntil)) {
+                return null;
+            }
+            userDAO.updateLoginFailureState(user.getId(), 0, null);
+            failedAttempts = 0;
+        }
+
+        boolean passwordMatches;
+        try {
+            passwordMatches = PasswordUtil.verifyPassword(password, user.getPasswordHash());
+        } catch (IllegalArgumentException e) {
+            LOGGER.warning("Invalid stored BCrypt hash for user id " + user.getId());
+            passwordMatches = false;
+        }
+
+        if (!passwordMatches) {
+            int nextAttempts = failedAttempts + 1;
+            LocalDateTime nextLockUntil = null;
+
+            if (nextAttempts >= MAX_FAILED_LOGIN_ATTEMPTS) {
+                nextAttempts = MAX_FAILED_LOGIN_ATTEMPTS;
+                nextLockUntil = now.plusMinutes(LOGIN_LOCK_MINUTES);
+            }
+
+            userDAO.updateLoginFailureState(user.getId(), nextAttempts, nextLockUntil);
+            return null;
+        }
+
+        userDAO.resetLoginFailures(user.getId());
+
+        return new LoginResult(
+                user.getId(),
+                user.getDisplayName(),
+                user.getRoles().stream()
+                        .map(com.crm.model.Role::getName)
+                        .toList()
+        );
     }
 
     /**

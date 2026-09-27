@@ -112,7 +112,7 @@ public class LoginServlet extends HttpServlet {
         createAuthenticatedSession(request, result);
 
         response.sendRedirect(
-                request.getContextPath() + "/html/index.html"
+                request.getContextPath() + resolveHomePath(result.roles())
         );
     }
 
@@ -200,6 +200,7 @@ public class LoginServlet extends HttpServlet {
         data.put("user", safeUser);
         data.put("roles", result.roles());
         data.put("session", sessionInfo);
+        data.put("homeUrl", request.getContextPath() + resolveHomePath(result.roles()));
 
         writeJson(
                 response,
@@ -251,6 +252,32 @@ public class LoginServlet extends HttpServlet {
         }
 
         return session;
+    }
+
+
+    private String resolveHomePath(java.util.List<String> roles) {
+        if (roles == null || roles.isEmpty()) {
+            return "/html/index.html";
+        }
+
+        java.util.Set<String> normalized = roles.stream()
+                .filter(java.util.Objects::nonNull)
+                .map(role -> role.trim().toLowerCase(java.util.Locale.ROOT))
+                .collect(java.util.stream.Collectors.toSet());
+
+        if (normalized.contains("admin") || normalized.contains("director")) {
+            return "/users";
+        }
+
+        if (normalized.contains("sales rep") || normalized.contains("team lead")) {
+            return "/jsp/pipeline/pipeline-stage.jsp";
+        }
+
+        if (normalized.contains("accountant")) {
+            return "/jsp/products/product-list.jsp";
+        }
+
+        return "/html/index.html";
     }
 
     private Map<String, Object> createSafeUser(

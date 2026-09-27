@@ -13,7 +13,7 @@ import java.util.List;
 public class UserDAO {
     public User findForLogin(String email) throws SQLException {
         String sql = "SELECT u.id, u.email, u.password_hash, "
-                + "COALESCE(u.display_name, u.full_name) AS display_name, u.active, u.status, "
+                + "COALESCE(u.display_name, u.full_name) AS display_name, u.active, u.status, u.failed_login_attempts, u.lock_until, "
                 + "r.id AS role_id, r.name AS role_name FROM users u "
                 + "LEFT JOIN user_roles ur ON ur.user_id = u.id "
                 + "LEFT JOIN roles r ON r.id = ur.role_id WHERE u.email = ? ORDER BY r.id";
@@ -32,6 +32,8 @@ public class UserDAO {
                         user.setDisplayName(rs.getString("display_name"));
                         user.setActive(rs.getBoolean("active"));
                         user.setStatus(rs.getString("status"));
+                        user.setFailedLoginAttempts(rs.getInt("failed_login_attempts"));
+                        user.setLockUntil(toLocalDateTime(rs.getTimestamp("lock_until")));
                     }
                     long roleId = rs.getLong("role_id");
                     if (!rs.wasNull()) roles.add(new com.crm.model.Role(roleId, rs.getString("role_name")));
@@ -42,6 +44,32 @@ public class UserDAO {
         }
     }
 
+
+
+    public void updateLoginFailureState(long userId, int failedAttempts, LocalDateTime lockUntil)
+            throws SQLException {
+        String sql = "UPDATE users SET failed_login_attempts = ?, lock_until = ? WHERE id = ?";
+        try (Connection conn = com.crm.util.DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, failedAttempts);
+            if (lockUntil == null) {
+                stmt.setNull(2, java.sql.Types.TIMESTAMP);
+            } else {
+                stmt.setTimestamp(2, Timestamp.valueOf(lockUntil));
+            }
+            stmt.setLong(3, userId);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void resetLoginFailures(long userId) throws SQLException {
+        String sql = "UPDATE users SET failed_login_attempts = 0, lock_until = NULL, last_login_at = NOW() WHERE id = ?";
+        try (Connection conn = com.crm.util.DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, userId);
+            stmt.executeUpdate();
+        }
+    }
 
     public User findByEmail(Connection conn, String email) throws SQLException {
         String sql = "SELECT id, username, email, password_hash, full_name, phone, status FROM users WHERE email = ?";

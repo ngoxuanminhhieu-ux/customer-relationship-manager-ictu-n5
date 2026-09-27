@@ -24,6 +24,8 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime lastLoginAt;
+    private int failedLoginAttempts;
+    private LocalDateTime lockUntil;
 
     public User() {}
 
@@ -57,6 +59,10 @@ public class User {
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public LocalDateTime getLastLoginAt() { return lastLoginAt; }
     public void setLastLoginAt(LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
+    public int getFailedLoginAttempts() { return failedLoginAttempts; }
+    public void setFailedLoginAttempts(int failedLoginAttempts) { this.failedLoginAttempts = failedLoginAttempts; }
+    public LocalDateTime getLockUntil() { return lockUntil; }
+    public void setLockUntil(LocalDateTime lockUntil) { this.lockUntil = lockUntil; }
 
     /** Compatibility alias for the current JSP contract. */
     public LocalDateTime getLastLogin() { return lastLoginAt; }
