@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>500 - Lỗi máy chủ nội bộ | CRM ICTU</title>
+    <title>${not empty code ? code : 'Thông báo lỗi'} - CRM ICTU</title>
 
     <!-- CSS dùng chung của hệ thống CRM -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/shared/common.css">
@@ -22,34 +22,29 @@
         <!-- Sidebar dùng chung của hệ thống -->
         <jsp:include page="/jsp/shared/sidebar.jsp" />
 
-        <!-- Khu vực nội dung chính của trang báo lỗi 500 -->
+        <!-- Khu vực nội dung chính của trang báo lỗi động -->
         <main class="error-page" id="errorApp" role="main">
-            <section class="err-card err-card--500" aria-labelledby="errTitle">
+            <section class="err-card" id="dynamicErrCard" aria-labelledby="errTitle">
 
-                <!-- Đồ họa Icon minh họa lỗi 500: Sự cố máy chủ / Gián đoạn hệ thống -->
-                <div class="err-illustration err-illustration--500" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
-                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
-                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
-                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
-                        <line x1="12" y1="11" x2="12" y2="13"></line>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                <!-- Đồ họa Icon minh họa động theo mã lỗi -->
+                <div class="err-illustration" id="dynamicErrIcon" aria-hidden="true">
+                    <svg id="defaultIconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
                     </svg>
                 </div>
 
                 <!-- Mã lỗi lớn & Huy hiệu trạng thái -->
                 <div class="err-code-display">
-                    <span class="err-code-number">500</span>
-                    <span class="err-badge">Lỗi máy chủ</span>
+                    <span class="err-code-number" id="dynamicErrCode">${not empty code ? code : (not empty param.code ? param.code : '500')}</span>
+                    <span class="err-badge" id="dynamicErrBadge">Thông báo hệ thống</span>
                 </div>
 
                 <!-- Tiêu đề & Thông điệp giải thích thân thiện -->
-                <h1 class="err-title" id="errTitle">Sự cố kỹ thuật từ máy chủ</h1>
-                <p class="err-description">
-                    Hệ thống đã gặp lỗi bất ngờ trong quá trình xử lý yêu cầu của bạn.
-                    Thông tin lỗi đã được tự động ghi nhận vào nhật ký hệ thống để đội ngũ kỹ thuật sớm khắc phục.
-                    Vui lòng thử tải lại trang hoặc quay lại sau ít phút.
+                <h1 class="err-title" id="errTitle">${not empty title ? title : 'Đã xảy ra sự cố'}</h1>
+                <p class="err-description" id="dynamicErrDesc">
+                    ${not empty message ? message : 'Hệ thống đã ghi nhận yêu cầu của bạn nhưng gặp trở ngại trong quá trình phản hồi. Vui lòng kiểm tra lại thao tác hoặc quay về bảng điều khiển.'}
                 </p>
 
                 <!-- Hộp thông tin tra cứu kỹ thuật (Diagnostic Box) -->
@@ -72,7 +67,7 @@
                             </svg>
                             Mã tra cứu sự cố:
                         </span>
-                        <span class="err-diag-value" id="diagRequestId">${not empty requestId ? requestId : 'CRM-SYS-500'}</span>
+                        <span class="err-diag-value" id="diagRequestId">${not empty requestId ? requestId : 'CRM-ERR-DYN'}</span>
                     </div>
                     <div class="err-diag-item">
                         <span class="err-diag-label">
@@ -81,27 +76,19 @@
                                 <line x1="2" y1="12" x2="22" y2="12"></line>
                                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                             </svg>
-                            Đường dẫn gặp lỗi:
+                            Đường dẫn yêu cầu:
                         </span>
                         <span class="err-diag-value" id="diagPath">${pageContext.request.requestURI}</span>
                     </div>
 
-                    <!-- Hiển thị chi tiết lỗi nếu Backend gửi kèm qua attribute error/message -->
-                    <div class="err-diag-detail" id="serverErrorDetail" style="${empty error and empty message ? 'display: none;' : ''}">
-                        <strong>Thông báo từ hệ thống:</strong>
-                        <span>${not empty error ? error : message}</span>
+                    <div class="err-diag-detail" id="serverErrorDetail" style="${empty error ? 'display: none;' : ''}">
+                        <strong>Thông báo lỗi chi tiết:</strong>
+                        <span>${error}</span>
                     </div>
                 </div>
 
                 <!-- Các nút hành động hỗ trợ người dùng quay lại luồng làm việc -->
                 <div class="err-actions">
-                    <button type="button" class="err-btn err-btn-reload" onclick="window.location.reload()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <polyline points="23 4 23 10 17 10"></polyline>
-                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                        </svg>
-                        <span>Tải lại trang</span>
-                    </button>
                     <button type="button" class="err-btn err-btn-secondary" onclick="window.history.back()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <polyline points="15 18 9 12 15 6"></polyline>
@@ -115,10 +102,18 @@
                         </svg>
                         <span>Về bảng điều khiển</span>
                     </a>
+                    <a href="${pageContext.request.contextPath}/login" class="err-btn err-btn-login" id="dynamicLoginBtn" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                            <polyline points="10 17 15 12 10 7"></polyline>
+                            <line x1="15" y1="12" x2="3" y2="12"></line>
+                        </svg>
+                        <span>Đăng nhập lại</span>
+                    </a>
                 </div>
 
                 <div class="err-footer-help">
-                    Nếu sự cố vẫn tiếp diễn, vui lòng sao chép mã tra cứu sự cố ở trên và gửi cho đội ngũ hỗ trợ kỹ thuật.
+                    Cần hỗ trợ kỹ thuật? Vui lòng gửi mã tra cứu sự cố cho Quản trị viên hệ thống CRM.
                 </div>
 
             </section>
@@ -131,6 +126,46 @@
     <script>
     (function () {
         'use strict';
+        var codeEl = document.getElementById('dynamicErrCode');
+        var cardEl = document.getElementById('dynamicErrCard');
+        var iconEl = document.getElementById('dynamicErrIcon');
+        var badgeEl = document.getElementById('dynamicErrBadge');
+        var loginBtn = document.getElementById('dynamicLoginBtn');
+        var titleEl = document.getElementById('errTitle');
+        var descEl = document.getElementById('dynamicErrDesc');
+
+        var code = codeEl ? codeEl.textContent.trim() : '500';
+
+        // Đổi giao diện và icon tương ứng với mã lỗi nếu là dynamic error
+        if (code === '401') {
+            cardEl.classList.add('err-card--401');
+            iconEl.classList.add('err-illustration--401');
+            badgeEl.textContent = 'Hết phiên làm việc';
+            if (loginBtn) loginBtn.style.display = 'inline-flex';
+            if (titleEl && titleEl.textContent.trim() === 'Đã xảy ra sự cố') {
+                titleEl.textContent = 'Phiên đăng nhập đã kết thúc';
+            }
+        } else if (code === '403') {
+            cardEl.classList.add('err-card--403');
+            iconEl.classList.add('err-illustration--403');
+            badgeEl.textContent = 'Từ chối truy cập';
+            if (loginBtn) loginBtn.style.display = 'inline-flex';
+            if (titleEl && titleEl.textContent.trim() === 'Đã xảy ra sự cố') {
+                titleEl.textContent = 'Không có quyền truy cập';
+            }
+        } else if (code === '404') {
+            cardEl.classList.add('err-card--404');
+            iconEl.classList.add('err-illustration--404');
+            badgeEl.textContent = 'Không tìm thấy';
+            if (titleEl && titleEl.textContent.trim() === 'Đã xảy ra sự cố') {
+                titleEl.textContent = 'Đường dẫn không tồn tại';
+            }
+        } else {
+            cardEl.classList.add('err-card--500');
+            iconEl.classList.add('err-illustration--500');
+            badgeEl.textContent = 'Lỗi máy chủ';
+        }
+
         var timestampEl = document.getElementById('diagTimestamp');
         if (timestampEl) {
             var now = new Date();
@@ -143,6 +178,7 @@
                 second: '2-digit'
             });
         }
+
         var pathEl = document.getElementById('diagPath');
         if (pathEl && (!pathEl.textContent || pathEl.textContent.trim() === '')) {
             pathEl.textContent = window.location.pathname;
