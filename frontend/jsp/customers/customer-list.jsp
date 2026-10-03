@@ -237,10 +237,26 @@
                         </table>
                     </div>
 
-                    <!-- Phân trang -->
-                    <div class="user-pagination">
-                        <div class="pagination-info" id="paginationInfo">
-                            Hiển thị <span id="showingCount">1 - 6</span> trên tổng số <span id="totalCustomerCount">6</span> khách hàng
+                    <!-- Phân trang danh sách khách hàng -->
+                    <div class="user-pagination" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                        <div class="pagination-info" id="paginationInfo" style="color: #64748b; font-size: 0.88rem;">
+                            Hiển thị <span id="showingCount" style="font-weight: 600; color: #1e293b;">0</span> trên tổng số <span id="totalCustomerCount" style="font-weight: 600; color: #1e293b;">0</span> khách hàng
+                        </div>
+                        <div class="pagination-controls" style="display: flex; align-items: center; gap: 8px;">
+                            <div style="display: flex; align-items: center; gap: 6px; margin-right: 12px; font-size: 0.85rem; color: #64748b;">
+                                <span>Hiển thị:</span>
+                                <select id="pageSizeSelect" style="padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; background: #fff; cursor: pointer;">
+                                    <option value="5" selected>5 dòng/trang</option>
+                                    <option value="10">10 dòng/trang</option>
+                                    <option value="20">20 dòng/trang</option>
+                                    <option value="50">50 dòng/trang</option>
+                                </select>
+                            </div>
+                            <button type="button" class="pagination-btn" id="btnFirstPage" title="Trang đầu" style="min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; cursor: pointer;">&laquo;</button>
+                            <button type="button" class="pagination-btn" id="btnPrevPage" title="Trang trước" style="min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; cursor: pointer;">&lsaquo;</button>
+                            <div id="paginationPageNumbers" style="display: flex; gap: 4px;"></div>
+                            <button type="button" class="pagination-btn" id="btnNextPage" title="Trang sau" style="min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; cursor: pointer;">&rsaquo;</button>
+                            <button type="button" class="pagination-btn" id="btnLastPage" title="Trang cuối" style="min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; cursor: pointer;">&raquo;</button>
                         </div>
                     </div>
                 </section>
@@ -248,7 +264,7 @@
         </main>
     </div>
 
-    <!-- Client-side script for interactive customer listing -->
+    <!-- Client-side script for interactive customer listing & pagination -->
     <script>
         (function() {
             var customers = [
@@ -257,18 +273,27 @@
                 { id: 3, code: 'KH-003', name: 'Vũ Thị Minh Hạnh', email: 'hanh.vu@vnpt.vn', phone: '0903 112 233', company: 'Tập đoàn Bưu chính Viễn thông VNPT', salesRep: 'Lê Hoàng Nam', value: 45000000, status: 'LEAD', statusText: 'Tiềm năng', statusClass: 'badge-lead' },
                 { id: 4, code: 'KH-004', name: 'Phạm Quang Huy', email: 'huy.pq@techcombank.com.vn', phone: '0979 556 789', company: 'Ngân hàng TMCP Kỹ Thương Việt Nam', salesRep: 'Trần Thị Bích', value: 150000000, status: 'ACTIVE', statusText: 'Chính thức', statusClass: 'badge-active' },
                 { id: 5, code: 'KH-005', name: 'Đỗ Thùy Trang', email: 'trang.do@shopee.vn', phone: '0945 998 877', company: 'Công ty TNHH Shopee Việt Nam', salesRep: 'Trần Thị Bích', value: 65000000, status: 'NEGOTIATING', statusText: 'Đang đàm phán', statusClass: 'badge-negotiating' },
-                { id: 6, code: 'KH-006', name: 'Hoàng Minh Tuấn', email: 'tuan.hm@vng.com.vn', phone: '0933 445 566', company: 'Công ty Cổ phần VNG', salesRep: 'Lê Hoàng Nam', value: 30000000, status: 'LEAD', statusText: 'Tiềm năng', statusClass: 'badge-lead' }
+                { id: 6, code: 'KH-006', name: 'Hoàng Minh Tuấn', email: 'tuan.hm@vng.com.vn', phone: '0933 445 566', company: 'Công ty Cổ phần VNG', salesRep: 'Lê Hoàng Nam', value: 30000000, status: 'LEAD', statusText: 'Tiềm năng', statusClass: 'badge-lead' },
+                { id: 7, code: 'KH-007', name: 'Bùi Thị Lan', email: 'lan.bt@misa.vn', phone: '0915 223 344', company: 'Công ty Cổ phần MISA', salesRep: 'Nguyễn Văn An', value: 95000000, status: 'ACTIVE', statusText: 'Chính thức', statusClass: 'badge-active' },
+                { id: 8, code: 'KH-008', name: 'Trịnh Văn Quyết', email: 'quyet.tv@sunshine.vn', phone: '0982 111 222', company: 'Tập đoàn Sunshine Group', salesRep: 'Trần Thị Bích', value: 220000000, status: 'NEGOTIATING', statusText: 'Đang đàm phán', statusClass: 'badge-negotiating' },
+                { id: 9, code: 'KH-009', name: 'Đặng Ngọc Sơn', email: 'son.dn@tiki.vn', phone: '0938 777 888', company: 'Công ty TNHH Ti Ki', salesRep: 'Lê Hoàng Nam', value: 40000000, status: 'LEAD', statusText: 'Tiềm năng', statusClass: 'badge-lead' },
+                { id: 10, code: 'KH-010', name: 'Ngô Thảo My', email: 'my.nt@vinmart.com', phone: '0909 333 444', company: 'Hệ thống Bán lẻ WinCommerce', salesRep: 'Trần Thị Bích', value: 180000000, status: 'ACTIVE', statusText: 'Chính thức', statusClass: 'badge-active' },
+                { id: 11, code: 'KH-011', name: 'Lý Quốc Bảo', email: 'bao.lq@vietjetair.com', phone: '0973 666 555', company: 'Hãng Hàng không Vietjet', salesRep: 'Nguyễn Văn An', value: 310000000, status: 'NEGOTIATING', statusText: 'Đang đàm phán', statusClass: 'badge-negotiating' },
+                { id: 12, code: 'KH-012', name: 'Mai Phương Thảo', email: 'thao.mp@sendo.vn', phone: '0962 444 111', company: 'Sàn TMĐT Sendo Việt Nam', salesRep: 'Lê Hoàng Nam', value: 55000000, status: 'CHURNED', statusText: 'Tạm ngưng', statusClass: 'badge-churned' }
             ];
+
+            var currentPage = 1;
+            var pageSize = 5;
 
             function formatCurrency(num) {
                 return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
             }
 
-            function renderTable() {
-                var search = document.getElementById('customerSearchInput').value.toLowerCase().trim();
+            function getFilteredCustomers() {
+                var search = (document.getElementById('customerSearchInput').value || '').toLowerCase().trim();
                 var status = document.getElementById('statusFilter').value;
 
-                var filtered = customers.filter(function(c) {
+                return customers.filter(function(c) {
                     if (status && c.status !== status) return false;
                     if (search) {
                         return c.name.toLowerCase().includes(search) ||
@@ -279,17 +304,60 @@
                     }
                     return true;
                 });
+            }
+
+            function renderPagination(totalItems) {
+                var totalPages = Math.ceil(totalItems / pageSize) || 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+                if (currentPage < 1) currentPage = 1;
+
+                var startIdx = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+                var endIdx = Math.min(currentPage * pageSize, totalItems);
+
+                document.getElementById('showingCount').textContent = startIdx + ' - ' + endIdx;
+                document.getElementById('totalCustomerCount').textContent = String(totalItems);
+
+                document.getElementById('btnFirstPage').disabled = (currentPage === 1);
+                document.getElementById('btnPrevPage').disabled = (currentPage === 1);
+                document.getElementById('btnNextPage').disabled = (currentPage === totalPages || totalItems === 0);
+                document.getElementById('btnLastPage').disabled = (currentPage === totalPages || totalItems === 0);
+
+                var pageContainer = document.getElementById('paginationPageNumbers');
+                pageContainer.innerHTML = '';
+
+                for (var p = 1; p <= totalPages; p++) {
+                    (function(pageIndex) {
+                        var pageBtn = document.createElement('button');
+                        pageBtn.type = 'button';
+                        pageBtn.className = 'pagination-btn' + (pageIndex === currentPage ? ' is-active' : '');
+                        pageBtn.textContent = pageIndex;
+                        pageBtn.style.cssText = 'min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid ' + (pageIndex === currentPage ? '#2563eb' : '#cbd5e1') + '; border-radius: 6px; background: ' + (pageIndex === currentPage ? '#2563eb' : '#fff') + '; color: ' + (pageIndex === currentPage ? '#fff' : '#1e293b') + '; font-weight: ' + (pageIndex === currentPage ? '700' : '500') + '; cursor: pointer;';
+                        pageBtn.addEventListener('click', function() {
+                            currentPage = pageIndex;
+                            renderTable();
+                        });
+                        pageContainer.appendChild(pageBtn);
+                    })(p);
+                }
+            }
+
+            function renderTable() {
+                var filtered = getFilteredCustomers();
+                var totalItems = filtered.length;
+                var totalPages = Math.ceil(totalItems / pageSize) || 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+
+                var pagedItems = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
                 var tbody = document.getElementById('customerTableBody');
                 if (filtered.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #64748b;">Không tìm thấy khách hàng nào phù hợp với điều kiện tìm kiếm.</td></tr>';
-                    document.getElementById('showingCount').textContent = '0';
-                    document.getElementById('totalCustomerCount').textContent = '0';
+                    renderPagination(0);
                     return;
                 }
 
                 var html = '';
-                filtered.forEach(function(c) {
+                pagedItems.forEach(function(c) {
                     var initials = c.name.split(' ').map(function(w) { return w[0]; }).slice(-2).join('').toUpperCase();
                     html += '<tr>' +
                         '<td><strong style="color: #2563eb;">' + c.code + '</strong></td>' +
@@ -314,15 +382,55 @@
                 });
 
                 tbody.innerHTML = html;
-                document.getElementById('showingCount').textContent = '1 - ' + filtered.length;
-                document.getElementById('totalCustomerCount').textContent = String(filtered.length);
+                renderPagination(totalItems);
             }
 
-            document.getElementById('customerSearchInput').addEventListener('input', renderTable);
-            document.getElementById('statusFilter').addEventListener('change', renderTable);
+            document.getElementById('pageSizeSelect').addEventListener('change', function(e) {
+                pageSize = parseInt(e.target.value) || 5;
+                currentPage = 1;
+                renderTable();
+            });
+
+            document.getElementById('btnFirstPage').addEventListener('click', function() {
+                currentPage = 1;
+                renderTable();
+            });
+
+            document.getElementById('btnPrevPage').addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+
+            document.getElementById('btnNextPage').addEventListener('click', function() {
+                var totalPages = Math.ceil(getFilteredCustomers().length / pageSize) || 1;
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+
+            document.getElementById('btnLastPage').addEventListener('click', function() {
+                var totalPages = Math.ceil(getFilteredCustomers().length / pageSize) || 1;
+                currentPage = totalPages;
+                renderTable();
+            });
+
+            document.getElementById('customerSearchInput').addEventListener('input', function() {
+                currentPage = 1;
+                renderTable();
+            });
+
+            document.getElementById('statusFilter').addEventListener('change', function() {
+                currentPage = 1;
+                renderTable();
+            });
+
             document.getElementById('btnResetFilters').addEventListener('click', function() {
                 document.getElementById('customerSearchInput').value = '';
                 document.getElementById('statusFilter').value = '';
+                currentPage = 1;
                 renderTable();
             });
 
@@ -331,6 +439,35 @@
             });
 
             renderTable();
+
+            // Tự động đồng bộ với backend /api/customers nếu máy chủ đang chạy
+            if (window.fetch) {
+                fetch('/api/customers')
+                    .then(function(res) { return res.json(); })
+                    .then(function(json) {
+                        if (json && json.data && Array.isArray(json.data.items) && json.data.items.length > 0) {
+                            customers = json.data.items.map(function(item) {
+                                return {
+                                    id: item.id,
+                                    code: item.code || ('KH-00' + item.id),
+                                    name: item.name || 'Khách hàng',
+                                    email: item.email || (item.code ? item.code.toLowerCase() + '@domain.vn' : ''),
+                                    phone: item.phone || '0900 000 000',
+                                    company: item.company || 'Doanh nghiệp',
+                                    salesRep: item.salesRep || 'Chưa phân công',
+                                    value: item.value || 50000000,
+                                    status: item.status || 'ACTIVE',
+                                    statusText: item.statusText || (item.status === 'LEAD' ? 'Tiềm năng' : (item.status === 'NEGOTIATING' ? 'Đang đàm phán' : 'Chính thức')),
+                                    statusClass: item.status === 'LEAD' ? 'badge-lead' : (item.status === 'NEGOTIATING' ? 'badge-negotiating' : (item.status === 'CHURNED' ? 'badge-churned' : 'badge-active'))
+                                };
+                            });
+                            renderTable();
+                        }
+                    })
+                    .catch(function(e) {
+                        // Tiếp tục với dữ liệu mẫu tĩnh
+                    });
+            }
         })();
     </script>
 </body>

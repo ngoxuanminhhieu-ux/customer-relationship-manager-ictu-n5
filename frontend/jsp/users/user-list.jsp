@@ -270,29 +270,51 @@ String filterQuery = "&q=" + java.net.URLEncoder.encode(keyword, "UTF-8")
                 </table>
             </div>
 
-            <nav class="crm-toolbar"
-                 aria-label="Phân trang">
+            <div class="user-pagination">
+                <div class="pagination-info">
+                    Trang <strong><%=pageNumber%></strong> / <strong><%=Math.max(totalPages, 1)%></strong> (Mặc định 20 dòng/trang)
+                </div>
 
-                <% if (pageNumber > 1) { %>
-                    <a class="crm-btn crm-btn-secondary"
-                       href="<%=base%>/users?page=<%=pageNumber-1%><%=esc(filterQuery)%>">
-                        Trang trước
-                    </a>
-                <% } %>
+                <div class="pagination-controls">
+                    <% if (pageNumber > 1) { %>
+                        <a class="pagination-btn"
+                           href="<%=base%>/users?page=1<%=esc(filterQuery)%>" title="Trang đầu">
+                            &laquo;
+                        </a>
+                        <a class="pagination-btn"
+                           href="<%=base%>/users?page=<%=pageNumber-1%><%=esc(filterQuery)%>" title="Trang trước">
+                            &lsaquo;
+                        </a>
+                    <% } else { %>
+                        <button type="button" class="pagination-btn" disabled>&laquo;</button>
+                        <button type="button" class="pagination-btn" disabled>&lsaquo;</button>
+                    <% } %>
 
-                <span>
-                    Trang <%=pageNumber%> /
-                    <%=Math.max(totalPages,1)%>
-                </span>
+                    <% for (int p = 1; p <= Math.max(totalPages, 1); p++) { %>
+                        <% if (p == pageNumber) { %>
+                            <span class="pagination-btn is-active"><%=p%></span>
+                        <% } else if (p <= 3 || p >= totalPages - 1 || Math.abs(p - pageNumber) <= 1) { %>
+                            <a class="pagination-btn" href="<%=base%>/users?page=<%=p%><%=esc(filterQuery)%>"><%=p%></a>
+                        <% } else if (p == 4 && totalPages > 5) { %>
+                            <span style="padding: 0 4px; color: #94a3b8;">&hellip;</span>
+                        <% } %>
+                    <% } %>
 
-                <% if (pageNumber < totalPages) { %>
-                    <a class="crm-btn crm-btn-secondary"
-                       href="<%=base%>/users?page=<%=pageNumber+1%><%=esc(filterQuery)%>">
-                        Trang sau
-                    </a>
-                <% } %>
-
-            </nav>
+                    <% if (pageNumber < totalPages) { %>
+                        <a class="pagination-btn"
+                           href="<%=base%>/users?page=<%=pageNumber+1%><%=esc(filterQuery)%>" title="Trang sau">
+                            &rsaquo;
+                        </a>
+                        <a class="pagination-btn"
+                           href="<%=base%>/users?page=<%=totalPages%><%=esc(filterQuery)%>" title="Trang cuối">
+                            &raquo;
+                        </a>
+                    <% } else { %>
+                        <button type="button" class="pagination-btn" disabled>&rsaquo;</button>
+                        <button type="button" class="pagination-btn" disabled>&raquo;</button>
+                    <% } %>
+                </div>
+            </div>
 
         </div>
     </section>

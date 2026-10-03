@@ -61,14 +61,27 @@
         queryString = queryString.replaceAll("&?page=\\d+", "");
         if (!queryString.isEmpty()) queryString = "&" + queryString;
 %>
-<div class="crm-pagination" style="margin-top: 20px; display: flex; gap: 10px; align-items: center;">
-    <% if (currentPage > 1) { %>
-        <a class="crm-btn crm-btn-secondary" href="?page=<%= currentPage - 1 %><%= Html.escape(queryString) %>">Trang trước</a>
-    <% } %>
-    <span>Trang <%= currentPage %> / <%= totalPages %></span>
-    <% if (currentPage < totalPages) { %>
-        <a class="crm-btn crm-btn-secondary" href="?page=<%= currentPage + 1 %><%= Html.escape(queryString) %>">Trang sau</a>
-    <% } %>
+<div class="user-pagination" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding-top: 14px; border-top: 1px solid #e2e8f0;">
+    <div class="pagination-info" style="color: #64748b; font-size: 0.88rem;">
+        Trang <strong><%= currentPage %></strong> / <strong><%= Math.max(totalPages, 1) %></strong> (Tổng số <strong><%= request.getAttribute("totalCount") != null ? request.getAttribute("totalCount") : logs.size() %></strong> bản ghi)
+    </div>
+    <div class="pagination-controls" style="display: flex; gap: 6px; align-items: center;">
+        <% if (currentPage > 1) { %>
+            <a class="pagination-btn" href="?page=1<%= Html.escape(queryString) %>" style="min-width: 32px; height: 32px; padding: 0 6px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; color: #1e293b;">&laquo;</a>
+            <a class="pagination-btn" href="?page=<%= currentPage - 1 %><%= Html.escape(queryString) %>" style="min-width: 32px; height: 32px; padding: 0 6px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; color: #1e293b;">&lsaquo;</a>
+        <% } %>
+        <% for (int p = 1; p <= Math.max(totalPages, 1); p++) { %>
+            <% if (p == currentPage) { %>
+                <span class="pagination-btn is-active" style="min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid #2563eb; border-radius: 6px; background: #2563eb; color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;"><%= p %></span>
+            <% } else if (p <= 3 || p >= totalPages - 1 || Math.abs(p - currentPage) <= 1) { %>
+                <a class="pagination-btn" href="?page=<%= p %><%= Html.escape(queryString) %>" style="min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: #1e293b; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;"><%= p %></a>
+            <% } %>
+        <% } %>
+        <% if (currentPage < totalPages) { %>
+            <a class="pagination-btn" href="?page=<%= currentPage + 1 %><%= Html.escape(queryString) %>" style="min-width: 32px; height: 32px; padding: 0 6px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; color: #1e293b;">&rsaquo;</a>
+            <a class="pagination-btn" href="?page=<%= totalPages %><%= Html.escape(queryString) %>" style="min-width: 32px; height: 32px; padding: 0 6px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; color: #1e293b;">&raquo;</a>
+        <% } %>
+    </div>
 </div>
 <% } %>
 </div></section></div></main></div><jsp:include page="/jsp/shared/footer.jsp"/>
