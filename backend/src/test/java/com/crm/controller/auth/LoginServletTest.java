@@ -69,6 +69,45 @@ class LoginServletTest {
         verify(response).sendRedirect("/crm/dashboard");
     }
 
+    @Test
+    void salesRepRoleRedirectsToCustomersPage() throws Exception {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        HttpSession session = mock(HttpSession.class);
+        AuthService.LoginResult result = new AuthService.LoginResult(
+                2102L, "Sales Staff", List.of("Sales Rep"));
+
+        when(request.getParameter("email")).thenReturn("sales@example.test");
+        when(request.getParameter("password")).thenReturn("CorrectPassword1!");
+        when(request.getSession(false)).thenReturn(null);
+        when(request.getSession(true)).thenReturn(session);
+        when(request.getContextPath()).thenReturn("/crm");
+        when(session.getId()).thenReturn("crm-21-sales-session");
+        when(authService.login("sales@example.test", "CorrectPassword1!")).thenReturn(result);
+        registeredSession = session;
+
+        servlet.doPost(request, response);
+
+        verify(response).sendRedirect("/crm/customers");
+    }
+
+    @Test
+    void blockedAccountShowsLockoutErrorMessage() throws Exception {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        RequestDispatcher dispatcher = mock(RequestDispatcher.class);
+
+        when(request.getParameter("email")).thenReturn("locked@example.test");
+        when(request.getParameter("password")).thenReturn("AnyPassword1!");
+        when(request.getRequestDispatcher("/jsp/auth/login.jsp")).thenReturn(dispatcher);
+        when(authService.isBlocked("locked@example.test")).thenReturn(true);
+
+        servlet.doPost(request, response);
+
+        verify(request).setAttribute("error", "Tài khoản tạm thời bị khóa 15 phút do nhập sai 5 lần liên tiếp. Vui lòng thử lại sau.");
+        verify(dispatcher).forward(request, response);
+    }
+
     private void assertRejectedWithGenericMessage(String email, String password) throws Exception {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);

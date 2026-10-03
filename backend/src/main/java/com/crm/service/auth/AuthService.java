@@ -25,6 +25,13 @@ public class AuthService {
         public LoginResult { roles = java.util.List.copyOf(roles); }
     }
 
+    public boolean isBlocked(String email) {
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+        return LOGIN_ATTEMPTS.isBlocked(email.trim().toLowerCase(java.util.Locale.ROOT));
+    }
+
     public LoginResult login(String email, String password) throws SQLException {
         if (email == null || email.isBlank() || password == null || password.isBlank()) return null;
         String normalizedEmail = email.trim().toLowerCase(java.util.Locale.ROOT);

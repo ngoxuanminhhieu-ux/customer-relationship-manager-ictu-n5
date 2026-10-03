@@ -84,6 +84,16 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
+        if (authService.isBlocked(email)) {
+            request.setAttribute("email", email);
+            request.setAttribute(
+                    "error",
+                    "Tài khoản tạm thời bị khóa 15 phút do nhập sai 5 lần liên tiếp. Vui lòng thử lại sau."
+            );
+            forwardLogin(request, response);
+            return;
+        }
+
         AuthService.LoginResult result;
 
         try {
@@ -109,10 +119,17 @@ public class LoginServlet extends HttpServlet {
 
         if (result == null) {
             request.setAttribute("email", email);
-            request.setAttribute(
-                    "error",
-                    "Email hoặc mật khẩu không đúng"
-            );
+            if (authService.isBlocked(email)) {
+                request.setAttribute(
+                        "error",
+                        "Tài khoản tạm thời bị khóa 15 phút do nhập sai 5 lần liên tiếp. Vui lòng thử lại sau."
+                );
+            } else {
+                request.setAttribute(
+                        "error",
+                        "Email hoặc mật khẩu không đúng"
+                );
+            }
             forwardLogin(request, response);
             return;
         }
@@ -125,9 +142,29 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
+        String targetUrl = determineLandingPage(result.roles());
         response.sendRedirect(
-                request.getContextPath() + "/dashboard"
+                request.getContextPath() + targetUrl
         );
+    }
+
+    public static String determineLandingPage(java.util.List<String> roles) {
+        if (roles == null || roles.isEmpty()) {
+            return "/dashboard";
+        }
+        if (roles.contains("Admin")) {
+            return "/dashboard";
+        }
+        if (roles.contains("Sales Rep")) {
+            return "/customers";
+        }
+        if (roles.contains("Accountant")) {
+            return "/products";
+        }
+        if (roles.contains("Team Lead")) {
+            return "/dashboard";
+        }
+        return "/dashboard";
     }
 
     /**
@@ -184,14 +221,35 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        if (result == null) {
+        if (authService.isBlocked(email)) {
             writeJson(
                     response,
-                    HttpServletResponse.SC_UNAUTHORIZED,
+                    423,
                     false,
-                    "Email hoặc mật khẩu không đúng",
+                    "Tài khoản tạm thời bị khóa 15 phút do nhập sai 5 lần liên tiếp. Vui lòng thử lại sau.",
                     null
             );
+            return;
+        }
+
+        if (result == null) {
+            if (authService.isBlocked(email)) {
+                writeJson(
+                        response,
+                        423,
+                        false,
+                        "Tài khoản tạm thời bị khóa 15 phút do nhập sai 5 lần liên tiếp. Vui lòng thử lại sau.",
+                        null
+                );
+            } else {
+                writeJson(
+                        response,
+                        HttpServletResponse.SC_UNAUTHORIZED,
+                        false,
+                        "Email hoặc mật khẩu không đúng",
+                        null
+                );
+            }
             return;
         }
 
