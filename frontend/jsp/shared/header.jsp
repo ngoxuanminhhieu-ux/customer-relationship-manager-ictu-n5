@@ -68,4 +68,32 @@ Object headerTeam = request.getAttribute("currentUserTeamName");
             </form>
         </div>
     </div>
+
+    <!-- SCRUM-33 AC 1: Tự động gia hạn phiên đăng nhập khi người dùng còn hoạt động -->
+    <script>
+        (function() {
+            var renewInterval = 2 * 60 * 1000; // Ping gia hạn mỗi 2 phút khi có hoạt động
+            var lastPing = Date.now();
+
+            function triggerActivityRenewal() {
+                var now = Date.now();
+                if (now - lastPing > renewInterval) {
+                    lastPing = now;
+                    var base = '${pageContext.request.contextPath}';
+                    fetch(base + '/api/auth/keepalive', { method: 'POST' })
+                        .then(function(res) {
+                            if (res.status === 401) {
+                                // Phiên đã hết hạn phía server -> đưa về login kèm thông báo
+                                window.location.href = base + '/login?expired=1';
+                            }
+                        })
+                        .catch(function() {});
+                }
+            }
+
+            ['mousemove', 'keydown', 'input', 'click', 'scroll', 'touchstart'].forEach(function(evt) {
+                window.addEventListener(evt, triggerActivityRenewal, { passive: true });
+            });
+        })();
+    </script>
 </header>

@@ -13,7 +13,18 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/permissions", "/permissions/*", "/api/permissions/*"})
+@WebFilter(urlPatterns = {
+    "/dashboard", "/dashboard/*",
+    "/customers", "/customers/*",
+    "/users", "/users/*",
+    "/products", "/products/*",
+    "/pipeline", "/pipeline/*",
+    "/winloss", "/winloss/*",
+    "/permissions", "/permissions/*",
+    "/audit", "/audit/*",
+    "/profile", "/profile/*",
+    "/api/permissions/*"
+})
 public class AuthenticationFilter implements Filter {
 
     @Override
@@ -35,15 +46,17 @@ public class AuthenticationFilter implements Filter {
             return;
         }
 
-        Object currentUser;
+        Object currentUser = null;
+        Object userId = null;
         try {
             currentUser = session.getAttribute(SessionKey.CURRENT_USER);
+            userId = session.getAttribute("userId");
         } catch (IllegalStateException e) {
             rejectUnauthenticated(httpRequest, httpResponse);
             return;
         }
 
-        if (currentUser == null) {
+        if (currentUser == null && userId == null) {
             rejectUnauthenticated(httpRequest, httpResponse);
             return;
         }
